@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pendaftaran Keluarga - MySapa</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  body { background: #f1f5f9; }
+  .hdr { background: linear-gradient(135deg, #0a2463 0%, #1e5bb8 55%, #7cc4f5 100%); }
+  .inp { width: 100%; border: 1px solid #cbd5e1; border-radius: .75rem; padding: .65rem .85rem; background: #fff; outline: none; transition: .15s; }
+  .inp:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,.18); }
+  .inp:disabled { background: #f1f5f9; color: #64748b; }
+  .lbl { display: block; font-size: .85rem; font-weight: 600; color: #334155; margin-bottom: .3rem; }
+  .btn { padding: .75rem 1.25rem; border-radius: .75rem; font-weight: 600; color: #fff; transition: .15s; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  @keyframes fade { from { opacity: 0; transform: translateY(8px);} to { opacity: 1; transform: none;} }
+  .fade { animation: fade .35s ease; }
+</style>
+</head>
+<body class="min-h-screen flex flex-col">
+
+<!-- HEADER -->
+<header class="hdr text-white shadow-lg">
+  <div class="max-w-3xl mx-auto px-4 py-6 sm:py-8 flex items-center gap-4">
+    <div class="shrink-0 w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white/15 backdrop-blur flex items-center justify-center ring-1 ring-white/30">
+      <svg viewBox="0 0 24 24" class="w-8 h-8 sm:w-9 sm:h-9" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 11.5 12 4l9 7.5"/>
+        <path d="M5.5 10v9.5h13V10"/>
+        <circle cx="9.5" cy="13" r="1.4"/><circle cx="14.5" cy="13" r="1.4"/>
+        <path d="M7.5 18c.3-1.7 1.1-2.5 2-2.5s1.7.8 2 2.5M12.5 18c.3-1.7 1.1-2.5 2-2.5s1.7.8 2 2.5"/>
+      </svg>
+    </div>
+    <div>
+      <h1 class="text-xl sm:text-3xl font-bold leading-tight">Pendaftaran Keluarga - MySapa</h1>
+      <p class="text-sky-100 text-sm sm:text-base">Lengkapi data keluarga dan anggota keluarga Anda</p>
+    </div>
+  </div>
+</header>
+
+<main class="flex-1 max-w-3xl w-full mx-auto px-4 py-6 space-y-6">
+
+  <!-- SEKSI DATA KELUARGA -->
+  <section class="bg-white rounded-2xl shadow p-5 sm:p-7">
+    <h2 class="text-lg font-bold text-blue-900 mb-4 flex items-center gap-2">
+      <span class="w-7 h-7 rounded-full bg-blue-900 text-white text-sm flex items-center justify-center">1</span> Data Keluarga
+    </h2>
+    <form id="formKK" class="grid grid-cols-1 sm:grid-cols-2 gap-4" novalidate>
+      <div>
+        <label class="lbl" for="nkk">NKK</label>
+        <input id="nkk" class="inp" inputmode="numeric" maxlength="16" placeholder="16 digit No. KK">
+      </div>
+      <div>
+        <label class="lbl" for="namaKK">Nama KK</label>
+        <input id="namaKK" class="inp" placeholder="Nama Kepala Keluarga">
+      </div>
+      <div>
+        <label class="lbl" for="statusKW">Status Kewargaan</label>
+        <select id="statusKW" class="inp">
+          <option value="">-- Pilih --</option>
+          <option value="WAT">WAT (Warga Asli Tinggal)</option>
+          <option value="WAP">WAP (Warga Asli Pindah)</option>
+          <option value="WDT">WDT (Warga Datang Tinggal)</option>
+          <option value="WDS">WDS (Warga Datang Sementara)</option>
+        </select>
+      </div>
+      <div>
+        <label class="lbl" for="hp">HP Keluarga</label>
+        <input id="hp" class="inp" type="tel" inputmode="numeric" maxlength="15" placeholder="08xxxxxxxxxx">
+      </div>
+      <div class="sm:col-span-2">
+        <label class="lbl" for="alamat">Alamat</label>
+        <textarea id="alamat" rows="2" class="inp" placeholder="Alamat lengkap"></textarea>
+      </div>
+      <div>
+        <label class="lbl" for="email">Email Keluarga</label>
+        <input id="email" class="inp" type="email" placeholder="nama@email.com">
+      </div>
+      <div>
+        <label class="lbl" for="fotoKK">Upload Foto KK <span class="font-normal text-slate-500">(pdf, jpg, png, webp - maks 5 MB)</span></label>
+        <input id="fotoKK" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp"
+          class="inp !p-2 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-blue-50 file:px-3 file:py-1.5 file:font-semibold file:text-blue-800">
+        <p id="fileInfo" class="text-xs text-slate-500 mt-1"></p>
+      </div>
+      <div class="sm:col-span-2 flex flex-col sm:flex-row gap-3 pt-2">
+        <button type="submit" id="btnSimpan" class="btn bg-blue-700 hover:bg-blue-800 sm:w-auto w-full" disabled>Simpan</button>
+        <button type="button" id="btnLanjut" class="btn bg-emerald-600 hover:bg-emerald-700 sm:w-auto w-full" disabled>Input Data Pribadi</button>
+        <button type="button" id="btnBaru" class="hidden text-sm text-slate-500 underline sm:ml-auto">Daftar KK baru</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- SEKSI DATA PRIBADI -->
+  <section id="secPribadi" class="hidden fade bg-white rounded-2xl shadow p-5 sm:p-7">
+    <h2 class="text-lg font-bold text-blue-900 mb-4 flex items-center gap-2">
+      <span class="w-7 h-7 rounded-full bg-blue-900 text-white text-sm flex items-center justify-center">2</span> Input Data Pribadi
+    </h2>
+    <form id="formAgt" class="grid grid-cols-1 sm:grid-cols-2 gap-4" novalidate>
+      <div>
+        <label class="lbl" for="nik">NIK</label>
+        <input id="nik" class="inp" inputmode="numeric" maxlength="16" placeholder="16 digit NIK">
+      </div>
+      <div>
+        <label class="lbl" for="nkk2">NKK</label>
+        <input id="nkk2" class="inp" disabled>
+      </div>
+      <div class="sm:col-span-2">
+        <label class="lbl" for="nama">Nama</label>
+        <input id="nama" class="inp" placeholder="Nama lengkap">
+      </div>
+      <div>
+        <label class="lbl" for="jender">Jender</label>
+        <select id="jender" class="inp">
+          <option value="">-- Pilih --</option><option>Laki-Laki</option><option>Perempuan</option>
+        </select>
+      </div>
+      <div>
+        <label class="lbl" for="tempat">Tempat Lahir</label>
+        <input id="tempat" class="inp" placeholder="Kota/Kabupaten">
+      </div>
+      <div>
+        <label class="lbl" for="tgl">Tgl Lahir</label>
+        <input id="tgl" type="date" class="inp">
+      </div>
+      <div>
+        <label class="lbl" for="pekerjaan">Pekerjaan</label>
+        <select id="pekerjaan" class="inp">
+          <option value="">-- Pilih --</option>
+          <option>ASN</option><option>Pensiunan</option><option>TNI</option><option>Polri</option>
+          <option>Mahasiswa</option><option>Pelajar</option><option>IRT</option><option>Lainnya</option>
+        </select>
+      </div>
+      <div>
+        <label class="lbl" for="agama">Agama</label>
+        <select id="agama" class="inp">
+          <option value="">-- Pilih --</option><option>Islam</option><option>Kristen</option><option>Hindu</option><option>Budha</option>
+        </select>
+      </div>
+      <div>
+        <label class="lbl" for="statusKawin">Status</label>
+        <select id="statusKawin" class="inp">
+          <option value="">-- Pilih --</option><option>Belum Kawin</option><option>Sudah Kawin</option><option>Pernah Kawin</option>
+        </select>
+      </div>
+      <div>
+        <label class="lbl" for="pendidikan">Pendidikan</label>
+        <select id="pendidikan" class="inp">
+          <option value="">-- Pilih --</option>
+          <option>SD</option><option>SMP</option><option>SMA</option><option>S1/DIV</option>
+          <option>S2</option><option>S3</option><option>Belum Sekolah</option>
+        </select>
+      </div>
+      <div>
+        <label class="lbl" for="hubungan">Hubungan</label>
+        <select id="hubungan" class="inp">
+          <option value="">-- Pilih --</option>
+          <option>Kepala Keluarga</option><option>Istri</option><option>Anak</option><option>Adik</option>
+          <option>Kakak</option><option>Orangtua</option><option>Famili</option><option>ART</option><option>Lainnya</option>
+        </select>
+      </div>
+      <div class="sm:col-span-2 pt-2">
+        <button type="submit" id="btnKirim" class="btn bg-blue-700 hover:bg-blue-800 w-full sm:w-auto" disabled>Kirim Data</button>
+        <p class="text-xs text-slate-500 mt-2">Setelah terkirim, form dikosongkan agar Anda dapat menambah anggota keluarga berikutnya.</p>
+      </div>
+    </form>
+  </section>
+</main>
+
+<!-- TOAST -->
+<div id="toast" class="fixed left-1/2 -translate-x-1/2 bottom-6 z-50 hidden max-w-[90%] px-5 py-3 rounded-xl text-white shadow-lg text-sm"></div>
+
+<!-- FOOTER -->
+<footer class="text-center text-sm text-slate-500 py-5">Powered by Anto Design Concept &copy; 2026</footer>
+
+<script>
+/* ====== KONFIGURASI ====== */
+// Ganti dengan URL Web App hasil deploy Apps Script (berakhiran /exec)
+const API_URL = 'https://script.google.com/macros/s/GANTI_DENGAN_ID_DEPLOYMENT/exec';
+const MAX_BYTES = 5 * 1024 * 1024;
+const OK_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
+
+const $ = id => document.getElementById(id);
+let savedNKK = null;
+
+/* ====== UTIL ====== */
+function toast(msg, ok = true) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.className = 'fixed left-1/2 -translate-x-1/2 bottom-6 z-50 max-w-[90%] px-5 py-3 rounded-xl text-white shadow-lg text-sm ' + (ok ? 'bg-emerald-600' : 'bg-red-600');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => t.classList.add('hidden'), 4500);
+}
+function setBusy(btn, busy, text) {
+  if (busy) { btn.dataset.txt = btn.textContent; btn.textContent = text; btn.disabled = true; }
+  else { btn.textContent = btn.dataset.txt || btn.textContent; }
+}
+function toBase64(file) {
+  return new Promise((res, rej) => {
+    const r = new FileReader();
+    r.onload = () => res(String(r.result).split(',')[1]);
+    r.onerror = () => rej(new Error('Gagal membaca file.'));
+    r.readAsDataURL(file);
+  });
+}
+async function callApi(payload) {
+  // text/plain agar tidak memicu preflight CORS pada Apps Script
+  const resp = await fetch(API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(payload)
+  });
+  const json = await resp.json();
+  if (!json.ok) throw new Error(json.message || 'Terjadi kesalahan.');
+  return json;
+}
+
+/* ====== VALIDASI FORM KK ====== */
+const kkFields = ['nkk', 'namaKK', 'statusKW', 'alamat', 'hp', 'email'];
+function kkValid() {
+  const f = $('fotoKK').files[0];
+  return /^\d{16}$/.test($('nkk').value.trim())
+    && $('namaKK').value.trim()
+    && $('statusKW').value
+    && $('alamat').value.trim()
+    && /^\d{9,15}$/.test($('hp').value.trim())
+    && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test($('email').value.trim())
+    && f && OK_TYPES.includes(f.type) && f.size <= MAX_BYTES;
+}
+function refreshKK() { $('btnSimpan').disabled = !!savedNKK || !kkValid(); }
+kkFields.forEach(id => { $(id).addEventListener('input', refreshKK); $(id).addEventListener('change', refreshKK); });
+['nkk', 'hp'].forEach(id => $(id).addEventListener('input', e => e.target.value = e.target.value.replace(/\D/g, '')));
+
+$('fotoKK').addEventListener('change', () => {
+  const f = $('fotoKK').files[0], info = $('fileInfo');
+  if (!f) { info.textContent = ''; }
+  else if (!OK_TYPES.includes(f.type)) { info.textContent = 'Format tidak didukung. Gunakan pdf, jpg, png, atau webp.'; info.className = 'text-xs text-red-600 mt-1'; }
+  else if (f.size > MAX_BYTES) { info.textContent = 'Ukuran file melebihi 5 MB.'; info.className = 'text-xs text-red-600 mt-1'; }
+  else { info.textContent = f.name + ' (' + (f.size / 1024).toFixed(0) + ' KB)'; info.className = 'text-xs text-slate-500 mt-1'; }
+  refreshKK();
+});
+
+/* ====== SIMPAN KK ====== */
+$('formKK').addEventListener('submit', async e => {
+  e.preventDefault();
+  if (!kkValid()) return;
+  const btn = $('btnSimpan');
+  setBusy(btn, true, 'Menyimpan...');
+  try {
+    const file = $('fotoKK').files[0];
+    const res = await callApi({
+      action: 'simpanKK',
+      data: {
+        nkk: $('nkk').value.trim(), namaKK: $('namaKK').value.trim(), status: $('statusKW').value,
+        alamat: $('alamat').value.trim(), hp: $('hp').value.trim(), email: $('email').value.trim(),
+        file: { name: file.name, mimeType: file.type, base64: await toBase64(file) }
+      }
+    });
+    savedNKK = res.nkk;
+    [...kkFields, 'fotoKK'].forEach(id => $(id).disabled = true);
+    btn.textContent = 'Tersimpan';
+    $('btnLanjut').disabled = false;
+    $('btnBaru').classList.remove('hidden');
+    toast(res.message);
+  } catch (err) {
+    btn.textContent = btn.dataset.txt;
+    refreshKK();
+    toast(err.message, false);
+  }
+});
+
+/* ====== INPUT DATA PRIBADI ====== */
+$('btnLanjut').addEventListener('click', () => {
+  if (!savedNKK) return;
+  $('nkk2').value = savedNKK;
+  $('secPribadi').classList.remove('hidden');
+  refreshAgt();
+  $('secPribadi').scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
+
+$('btnBaru').addEventListener('click', () => {
+  if (!confirm('Mulai pendaftaran KK baru? Form akan dikosongkan.')) return;
+  savedNKK = null;
+  $('formKK').reset(); $('formAgt').reset();
+  [...kkFields, 'fotoKK'].forEach(id => $(id).disabled = false);
+  $('fileInfo').textContent = '';
+  $('btnSimpan').textContent = 'Simpan';
+  $('btnLanjut').disabled = true;
+  $('btnBaru').classList.add('hidden');
+  $('secPribadi').classList.add('hidden');
+  refreshKK();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+
+const agtFields = ['nik', 'nama', 'jender', 'tempat', 'tgl', 'pekerjaan', 'agama', 'statusKawin', 'pendidikan', 'hubungan'];
+function agtValid() {
+  return /^\d{16}$/.test($('nik').value.trim()) && $('nkk2').value
+    && agtFields.slice(1).every(id => $(id).value.trim());
+}
+function refreshAgt() { $('btnKirim').disabled = !agtValid(); }
+agtFields.forEach(id => { $(id).addEventListener('input', refreshAgt); $(id).addEventListener('change', refreshAgt); });
+$('nik').addEventListener('input', e => e.target.value = e.target.value.replace(/\D/g, ''));
+
+$('formAgt').addEventListener('submit', async e => {
+  e.preventDefault();
+  if (!agtValid()) return;
+  const btn = $('btnKirim');
+  setBusy(btn, true, 'Mengirim...');
+  try {
+    const res = await callApi({
+      action: 'simpanAnggota',
+      data: {
+        nik: $('nik').value.trim(), nkk: $('nkk2').value, nama: $('nama').value.trim(),
+        jender: $('jender').value, tempatLahir: $('tempat').value.trim(), tglLahir: $('tgl').value,
+        pekerjaan: $('pekerjaan').value, agama: $('agama').value, status: $('statusKawin').value,
+        pendidikan: $('pendidikan').value, hubungan: $('hubungan').value
+      }
+    });
+    toast(res.message);
+    $('formAgt').reset();
+    $('nkk2').value = savedNKK;
+    $('nik').focus();
+  } catch (err) {
+    toast(err.message, false);
+  } finally {
+    btn.textContent = btn.dataset.txt || 'Kirim Data';
+    refreshAgt();
+  }
+});
+
+refreshKK();
+</script>
+</body>
+</html>
