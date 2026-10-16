@@ -16,6 +16,8 @@
   .btn:disabled { opacity: .45; cursor: not-allowed; }
   @keyframes fade { from { opacity: 0; transform: translateY(8px);} to { opacity: 1; transform: none;} }
   .fade { animation: fade .35s ease; }
+  @keyframes pop { from { opacity: 0; transform: scale(.92) translateY(10px);} to { opacity: 1; transform: none;} }
+  .modal-card { animation: pop .22s ease; }
 </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -40,11 +42,24 @@
 
 <main class="flex-1 max-w-3xl w-full mx-auto px-4 py-6 space-y-6">
 
+  <!-- BANNER PENDAFTARAN BELUM SELESAI -->
+  <div id="bannerLanjut" class="hidden fade bg-amber-50 border border-amber-200 text-amber-900 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+    <p id="bannerTeks" class="text-sm flex-1"></p>
+    <div class="flex gap-2">
+      <button type="button" id="bannerYa" class="px-4 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold">Lanjutkan</button>
+      <button type="button" id="bannerTidak" class="px-4 py-2 rounded-xl bg-white border border-amber-300 text-amber-800 text-sm font-semibold">Abaikan</button>
+    </div>
+  </div>
+
   <!-- SEKSI DATA KELUARGA -->
   <section class="bg-white rounded-2xl shadow p-5 sm:p-7">
     <h2 class="text-lg font-bold text-blue-900 mb-4 flex items-center gap-2">
       <span class="w-7 h-7 rounded-full bg-blue-900 text-white text-sm flex items-center justify-center">1</span> Data Keluarga
     </h2>
+    <p class="text-sm text-slate-600 mb-4 -mt-1">
+      Sudah pernah menyimpan data keluarga tetapi belum mengisi data pribadi?
+      <button type="button" id="btnLanjutPengisian" class="font-semibold text-blue-700 underline">Lanjutkan Pengisian</button>
+    </p>
     <form id="formKK" class="grid grid-cols-1 sm:grid-cols-2 gap-4" novalidate>
       <div>
         <label class="lbl" for="nkk">NKK</label>
@@ -78,8 +93,19 @@
       </div>
       <div>
         <label class="lbl" for="fotoKK">Upload Foto KK <span class="font-normal text-slate-500">(pdf, jpg, png, webp - maks 5 MB)</span></label>
-        <input id="fotoKK" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp"
-          class="inp !p-2 text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-blue-50 file:px-3 file:py-1.5 file:font-semibold file:text-blue-800">
+        <div class="flex gap-2">
+          <button type="button" id="btnKamera" class="inp flex-1 !py-2.5 text-sm font-semibold text-blue-800 bg-blue-50 hover:bg-blue-100 flex items-center justify-center gap-2">
+            <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
+            Ambil Foto
+          </button>
+          <button type="button" id="btnPilihFile" class="inp flex-1 !py-2.5 text-sm font-semibold text-blue-800 bg-blue-50 hover:bg-blue-100 flex items-center justify-center gap-2">
+            <svg viewBox="0 0 24 24" class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5M5 20h14"/></svg>
+            Pilih File
+          </button>
+        </div>
+        <input id="fotoKK" type="file" class="hidden" accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp">
+        <input id="fotoKamera" type="file" class="hidden" accept="image/*" capture="environment">
+        <img id="fotoPreview" alt="Pratinjau Foto KK" class="hidden mt-2 rounded-xl max-h-40 border border-slate-200">
         <p id="fileInfo" class="text-xs text-slate-500 mt-1"></p>
       </div>
       <div class="sm:col-span-2 flex flex-col sm:flex-row gap-3 pt-2">
@@ -95,6 +121,9 @@
     <h2 class="text-lg font-bold text-blue-900 mb-4 flex items-center gap-2">
       <span class="w-7 h-7 rounded-full bg-blue-900 text-white text-sm flex items-center justify-center">2</span> Input Data Pribadi
     </h2>
+    <div id="daftarAnggota" class="mb-5 rounded-xl bg-slate-50 border border-slate-200 p-4">
+      <p class="text-sm text-slate-500">Belum ada anggota tersimpan untuk KK ini.</p>
+    </div>
     <form id="formAgt" class="grid grid-cols-1 sm:grid-cols-2 gap-4" novalidate>
       <div>
         <label class="lbl" for="nik">NIK</label>
@@ -166,6 +195,84 @@
   </section>
 </main>
 
+<!-- MODAL KAMERA -->
+<div id="modalKamera" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="modalKameraTitle">
+  <div id="modalKameraBg" class="absolute inset-0 bg-slate-900/70 backdrop-blur-sm"></div>
+  <div class="modal-card relative w-full max-w-lg bg-white rounded-2xl shadow-2xl overflow-hidden">
+    <div class="hdr px-5 py-4 flex items-center gap-3 text-white">
+      <div class="w-10 h-10 rounded-xl bg-white/15 ring-1 ring-white/30 flex items-center justify-center">
+        <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>
+      </div>
+      <h3 id="modalKameraTitle" class="font-bold text-lg">Ambil Foto KK</h3>
+    </div>
+    <div class="bg-black">
+      <video id="camVideo" autoplay playsinline muted class="w-full max-h-[60vh] object-contain"></video>
+    </div>
+    <p id="camErr" class="px-5 pt-3 text-sm text-red-600 empty:hidden"></p>
+    <p class="px-5 pt-3 text-xs text-slate-500">Posisikan KK agar seluruh halaman terlihat jelas, tidak buram, dan tidak silau.</p>
+    <div class="p-5 flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
+      <button type="button" id="camBatal" class="px-4 py-2.5 rounded-xl font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition">Batal</button>
+      <button type="button" id="camGanti" class="px-4 py-2.5 rounded-xl font-semibold text-blue-800 bg-blue-50 hover:bg-blue-100 transition">Ganti Kamera</button>
+      <button type="button" id="camAmbil" class="px-4 py-2.5 rounded-xl font-semibold text-white bg-blue-700 hover:bg-blue-800 transition disabled:opacity-45" disabled>Ambil Foto</button>
+    </div>
+    <canvas id="camCanvas" class="hidden"></canvas>
+  </div>
+</div>
+
+<!-- MODAL LANJUTKAN PENGISIAN -->
+<div id="modalLanjut" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="modalLanjutTitle">
+  <div id="modalLanjutBg" class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"></div>
+  <form id="formLanjut" class="modal-card relative w-full max-w-sm bg-white rounded-2xl shadow-2xl overflow-hidden" novalidate>
+    <div class="hdr px-5 py-4 flex items-center gap-3 text-white">
+      <div class="w-10 h-10 rounded-xl bg-white/15 ring-1 ring-white/30 flex items-center justify-center">
+        <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12h14M13 6l6 6-6 6"/>
+        </svg>
+      </div>
+      <h3 id="modalLanjutTitle" class="font-bold text-lg">Lanjutkan Pengisian</h3>
+    </div>
+    <div class="px-5 pt-5 space-y-3">
+      <p class="text-sm text-slate-600">Masukkan NKK dan HP Keluarga yang dulu Anda daftarkan untuk melanjutkan input data pribadi.</p>
+      <div>
+        <label class="lbl" for="lnNkk">NKK</label>
+        <input id="lnNkk" class="inp" inputmode="numeric" maxlength="16" placeholder="16 digit No. KK">
+      </div>
+      <div>
+        <label class="lbl" for="lnHp">HP Keluarga</label>
+        <input id="lnHp" class="inp" type="tel" inputmode="numeric" maxlength="15" placeholder="08xxxxxxxxxx">
+      </div>
+      <p id="lnErr" class="text-sm text-red-600 min-h-[1.25rem]"></p>
+    </div>
+    <div class="px-5 pb-5 flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
+      <button type="button" id="lnBatal" class="px-4 py-2.5 rounded-xl font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition">Batal</button>
+      <button type="submit" id="lnOk" class="px-4 py-2.5 rounded-xl font-semibold text-white bg-blue-700 hover:bg-blue-800 transition">Lanjutkan</button>
+    </div>
+  </form>
+</div>
+
+<!-- MODAL KONFIRMASI DAFTAR KK BARU -->
+<div id="modalBaru" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="modalBaruTitle">
+  <div id="modalBaruBg" class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm"></div>
+  <div class="modal-card relative w-full max-w-sm bg-white rounded-2xl shadow-2xl overflow-hidden">
+    <div class="hdr px-5 py-4 flex items-center gap-3 text-white">
+      <div class="w-10 h-10 rounded-xl bg-white/15 ring-1 ring-white/30 flex items-center justify-center">
+        <svg viewBox="0 0 24 24" class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 5v14M5 12h14"/>
+        </svg>
+      </div>
+      <h3 id="modalBaruTitle" class="font-bold text-lg">Daftar KK Baru?</h3>
+    </div>
+    <div class="px-5 py-5 text-slate-600 text-sm leading-relaxed">
+      Form Data Keluarga dan Data Pribadi akan dikosongkan agar Anda dapat mendaftarkan keluarga lain.
+      <span class="block mt-2 text-slate-500">Data yang sudah tersimpan di spreadsheet tidak akan terhapus.</span>
+    </div>
+    <div class="px-5 pb-5 flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
+      <button type="button" id="modalBaruBatal" class="px-4 py-2.5 rounded-xl font-semibold text-slate-600 bg-slate-100 hover:bg-slate-200 transition">Batal</button>
+      <button type="button" id="modalBaruOk" class="px-4 py-2.5 rounded-xl font-semibold text-white bg-blue-700 hover:bg-blue-800 transition">Ya, Mulai Baru</button>
+    </div>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div id="toast" class="fixed left-1/2 -translate-x-1/2 bottom-6 z-50 hidden max-w-[90%] px-5 py-3 rounded-xl text-white shadow-lg text-sm"></div>
 
@@ -181,6 +288,8 @@ const OK_TYPES = ['application/pdf', 'image/jpeg', 'image/png', 'image/webp'];
 
 const $ = id => document.getElementById(id);
 let savedNKK = null;
+let savedHP = null;
+let fotoFile = null;
 
 /* ====== UTIL ====== */
 function toast(msg, ok = true) {
@@ -217,7 +326,7 @@ async function callApi(payload) {
 /* ====== VALIDASI FORM KK ====== */
 const kkFields = ['nkk', 'namaKK', 'statusKW', 'alamat', 'hp', 'email'];
 function kkValid() {
-  const f = $('fotoKK').files[0];
+  const f = fotoFile;
   return /^\d{16}$/.test($('nkk').value.trim())
     && $('namaKK').value.trim()
     && $('statusKW').value
@@ -230,14 +339,7 @@ function refreshKK() { $('btnSimpan').disabled = !!savedNKK || !kkValid(); }
 kkFields.forEach(id => { $(id).addEventListener('input', refreshKK); $(id).addEventListener('change', refreshKK); });
 ['nkk', 'hp'].forEach(id => $(id).addEventListener('input', e => e.target.value = e.target.value.replace(/\D/g, '')));
 
-$('fotoKK').addEventListener('change', () => {
-  const f = $('fotoKK').files[0], info = $('fileInfo');
-  if (!f) { info.textContent = ''; }
-  else if (!OK_TYPES.includes(f.type)) { info.textContent = 'Format tidak didukung. Gunakan pdf, jpg, png, atau webp.'; info.className = 'text-xs text-red-600 mt-1'; }
-  else if (f.size > MAX_BYTES) { info.textContent = 'Ukuran file melebihi 5 MB.'; info.className = 'text-xs text-red-600 mt-1'; }
-  else { info.textContent = f.name + ' (' + (f.size / 1024).toFixed(0) + ' KB)'; info.className = 'text-xs text-slate-500 mt-1'; }
-  refreshKK();
-});
+// Foto KK ditangani oleh blok "FOTO KK: kamera atau file" di bawah
 
 /* ====== SIMPAN KK ====== */
 $('formKK').addEventListener('submit', async e => {
@@ -246,7 +348,7 @@ $('formKK').addEventListener('submit', async e => {
   const btn = $('btnSimpan');
   setBusy(btn, true, 'Menyimpan...');
   try {
-    const file = $('fotoKK').files[0];
+    const file = fotoFile;
     const res = await callApi({
       action: 'simpanKK',
       data: {
@@ -256,7 +358,10 @@ $('formKK').addEventListener('submit', async e => {
       }
     });
     savedNKK = res.nkk;
+    savedHP = $('hp').value.trim();
+    simpanPending({ nkk: savedNKK, hp: savedHP, namaKK: $('namaKK').value.trim() });
     [...kkFields, 'fotoKK'].forEach(id => $(id).disabled = true);
+    setFotoEnabled(false);
     btn.textContent = 'Tersimpan';
     $('btnLanjut').disabled = false;
     $('btnBaru').classList.remove('hidden');
@@ -277,11 +382,34 @@ $('btnLanjut').addEventListener('click', () => {
   $('secPribadi').scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
 
-$('btnBaru').addEventListener('click', () => {
-  if (!confirm('Mulai pendaftaran KK baru? Form akan dikosongkan.')) return;
+function openModalBaru() {
+  $('modalBaru').classList.remove('hidden');
+  $('modalBaruOk').focus();
+}
+function closeModalBaru() { $('modalBaru').classList.add('hidden'); }
+
+$('btnBaru').addEventListener('click', openModalBaru);
+$('modalBaruBatal').addEventListener('click', closeModalBaru);
+$('modalBaruBg').addEventListener('click', closeModalBaru);
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && !$('modalBaru').classList.contains('hidden')) closeModalBaru();
+});
+$('modalBaruOk').addEventListener('click', () => {
+  closeModalBaru();
+  resetSemua();
+});
+
+function resetSemua() {
   savedNKK = null;
+  savedHP = null;
+  hapusPending();
+  $('bannerLanjut').classList.add('hidden');
+  renderAnggota([]);
   $('formKK').reset(); $('formAgt').reset();
   [...kkFields, 'fotoKK'].forEach(id => $(id).disabled = false);
+  setFotoEnabled(true);
+  fotoFile = null;
+  $('fotoPreview').classList.add('hidden');
   $('fileInfo').textContent = '';
   $('btnSimpan').textContent = 'Simpan';
   $('btnLanjut').disabled = true;
@@ -289,7 +417,7 @@ $('btnBaru').addEventListener('click', () => {
   $('secPribadi').classList.add('hidden');
   refreshKK();
   window.scrollTo({ top: 0, behavior: 'smooth' });
-});
+}
 
 const agtFields = ['nik', 'nama', 'jender', 'tempat', 'tgl', 'pekerjaan', 'agama', 'statusKawin', 'pendidikan', 'hubungan'];
 function agtValid() {
@@ -309,13 +437,14 @@ $('formAgt').addEventListener('submit', async e => {
     const res = await callApi({
       action: 'simpanAnggota',
       data: {
-        nik: $('nik').value.trim(), nkk: $('nkk2').value, nama: $('nama').value.trim(),
+        hp: savedHP, nik: $('nik').value.trim(), nkk: $('nkk2').value, nama: $('nama').value.trim(),
         jender: $('jender').value, tempatLahir: $('tempat').value.trim(), tglLahir: $('tgl').value,
         pekerjaan: $('pekerjaan').value, agama: $('agama').value, status: $('statusKawin').value,
         pendidikan: $('pendidikan').value, hubungan: $('hubungan').value
       }
     });
     toast(res.message);
+    renderAnggota(res.anggota);
     $('formAgt').reset();
     $('nkk2').value = savedNKK;
     $('nik').focus();
@@ -325,6 +454,211 @@ $('formAgt').addEventListener('submit', async e => {
     btn.textContent = btn.dataset.txt || 'Kirim Data';
     refreshAgt();
   }
+});
+
+/* ====== FOTO KK: kamera atau file ====== */
+let camStream = null, camFacing = 'environment';
+
+function setFotoEnabled(on) {
+  ['fotoKK', 'btnKamera', 'btnPilihFile'].forEach(id => $(id).disabled = !on);
+}
+
+function setFoto(file) {
+  const info = $('fileInfo'), prev = $('fotoPreview');
+  fotoFile = null;
+  prev.classList.add('hidden');
+  if (!file) {
+    info.textContent = '';
+  } else if (!OK_TYPES.includes(file.type)) {
+    info.textContent = 'Format tidak didukung. Gunakan pdf, jpg, png, atau webp.';
+    info.className = 'text-xs text-red-600 mt-1';
+  } else if (file.size > MAX_BYTES) {
+    info.textContent = 'Ukuran file melebihi 5 MB.';
+    info.className = 'text-xs text-red-600 mt-1';
+  } else {
+    fotoFile = file;
+    info.textContent = file.name + ' (' + (file.size / 1024).toFixed(0) + ' KB)';
+    info.className = 'text-xs text-slate-500 mt-1';
+    if (file.type.indexOf('image/') === 0) {
+      prev.src = URL.createObjectURL(file);
+      prev.classList.remove('hidden');
+    }
+  }
+  refreshKK();
+}
+
+$('btnPilihFile').addEventListener('click', () => { $('fotoKK').value = ''; $('fotoKK').click(); });
+$('fotoKK').addEventListener('change', () => setFoto($('fotoKK').files[0]));
+$('fotoKamera').addEventListener('change', () => setFoto($('fotoKamera').files[0])); // cadangan bila kamera langsung tidak tersedia
+
+function stopStream() {
+  if (camStream) { camStream.getTracks().forEach(t => t.stop()); camStream = null; }
+  $('camVideo').srcObject = null;
+}
+async function mulaiStream() {
+  stopStream();
+  $('camErr').textContent = '';
+  $('camAmbil').disabled = true;
+  try {
+    camStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: { ideal: camFacing }, width: { ideal: 1920 } },
+      audio: false
+    });
+    $('camVideo').srcObject = camStream;
+    $('camAmbil').disabled = false;
+  } catch (err) {
+    $('camErr').textContent = 'Kamera tidak dapat diakses. Izinkan akses kamera di browser, atau tutup jendela ini dan gunakan "Pilih File".';
+  }
+}
+async function bukaKamera() {
+  if ($('btnKamera').disabled) return;
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    $('fotoKamera').value = '';
+    $('fotoKamera').click(); // cadangan: kamera bawaan HP lewat input file
+    return;
+  }
+  $('modalKamera').classList.remove('hidden');
+  await mulaiStream();
+}
+function tutupKamera() { stopStream(); $('modalKamera').classList.add('hidden'); }
+
+$('btnKamera').addEventListener('click', bukaKamera);
+$('camBatal').addEventListener('click', tutupKamera);
+$('modalKameraBg').addEventListener('click', tutupKamera);
+$('camGanti').addEventListener('click', () => {
+  camFacing = camFacing === 'environment' ? 'user' : 'environment';
+  mulaiStream();
+});
+$('camAmbil').addEventListener('click', () => {
+  const v = $('camVideo');
+  if (!v.videoWidth) return;
+  const scale = Math.min(1, 1600 / Math.max(v.videoWidth, v.videoHeight)); // maks 1600 px agar ukuran file kecil
+  const c = $('camCanvas');
+  c.width = Math.round(v.videoWidth * scale);
+  c.height = Math.round(v.videoHeight * scale);
+  c.getContext('2d').drawImage(v, 0, 0, c.width, c.height);
+  c.toBlob(blob => {
+    if (!blob) { toast('Gagal mengambil foto. Coba lagi.', false); return; }
+    setFoto(new File([blob], 'KK_kamera.jpg', { type: 'image/jpeg' }));
+    tutupKamera();
+  }, 'image/jpeg', 0.85);
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && !$('modalKamera').classList.contains('hidden')) tutupKamera();
+});
+window.addEventListener('pagehide', stopStream);
+
+/* ====== LANJUTKAN PENGISIAN ====== */
+const LS_KEY = 'mysapa_pending_kk';
+function simpanPending(o) { try { localStorage.setItem(LS_KEY, JSON.stringify(o)); } catch (e) {} }
+function ambilPending() { try { return JSON.parse(localStorage.getItem(LS_KEY) || 'null'); } catch (e) { return null; } }
+function hapusPending() { try { localStorage.removeItem(LS_KEY); } catch (e) {} }
+
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+
+function renderAnggota(list) {
+  const box = $('daftarAnggota');
+  if (!list || !list.length) {
+    box.innerHTML = '<p class="text-sm text-slate-500">Belum ada anggota tersimpan untuk KK ini.</p>';
+    return;
+  }
+  box.innerHTML = '<p class="text-sm font-semibold text-slate-700 mb-2">Anggota yang sudah tersimpan (' + list.length + ')</p>'
+    + '<ul class="space-y-1">'
+    + list.map(a => '<li class="text-sm flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>'
+      + '<span class="font-medium">' + esc(a.nama) + '</span><span class="text-slate-500">' + esc(a.hubungan || '') + '</span></li>').join('')
+    + '</ul>';
+}
+
+// Pulihkan keadaan "sudah tersimpan" dari data server, lalu buka seksi Data Pribadi
+function terapkanKK(r, hp) {
+  savedNKK = r.nkk; savedHP = hp;
+  $('nkk').value = r.nkk; $('namaKK').value = r.namaKK || ''; $('statusKW').value = r.status || '';
+  $('alamat').value = r.alamat || ''; $('hp').value = hp; $('email').value = r.email || '';
+  [...kkFields, 'fotoKK'].forEach(id => $(id).disabled = true);
+  setFotoEnabled(false);
+  $('fotoPreview').classList.add('hidden');
+  $('fileInfo').textContent = 'Foto KK sudah tersimpan.';
+  $('fileInfo').className = 'text-xs text-slate-500 mt-1';
+  $('btnSimpan').textContent = 'Tersimpan';
+  $('btnSimpan').disabled = true;
+  $('btnLanjut').disabled = false;
+  $('btnBaru').classList.remove('hidden');
+  $('bannerLanjut').classList.add('hidden');
+  renderAnggota(r.anggota);
+  $('nkk2').value = r.nkk;
+  $('secPribadi').classList.remove('hidden');
+  refreshAgt();
+  $('secPribadi').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/* Modal Lanjutkan Pengisian */
+function bukaModalLanjut() {
+  $('lnNkk').value = ''; $('lnHp').value = ''; $('lnErr').textContent = '';
+  $('modalLanjut').classList.remove('hidden');
+  $('lnNkk').focus();
+}
+function tutupModalLanjut() { $('modalLanjut').classList.add('hidden'); }
+$('btnLanjutPengisian').addEventListener('click', bukaModalLanjut);
+$('lnBatal').addEventListener('click', tutupModalLanjut);
+$('modalLanjutBg').addEventListener('click', tutupModalLanjut);
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && !$('modalLanjut').classList.contains('hidden')) tutupModalLanjut();
+});
+['lnNkk', 'lnHp'].forEach(id => $(id).addEventListener('input', e => e.target.value = e.target.value.replace(/\D/g, '')));
+
+$('formLanjut').addEventListener('submit', async e => {
+  e.preventDefault();
+  const nkk = $('lnNkk').value.trim(), hp = $('lnHp').value.trim();
+  if (!/^\d{16}$/.test(nkk) || !/^\d{9,15}$/.test(hp)) {
+    $('lnErr').textContent = 'Isi NKK (16 digit) dan HP Keluarga dengan benar.';
+    return;
+  }
+  const btn = $('lnOk');
+  $('lnErr').textContent = '';
+  setBusy(btn, true, 'Memeriksa...');
+  try {
+    const r = await callApi({ action: 'cekKK', data: { nkk, hp } });
+    tutupModalLanjut();
+    terapkanKK(r, hp);
+    simpanPending({ nkk: r.nkk, hp, namaKK: r.namaKK });
+    toast('Data keluarga ditemukan. Silakan lanjutkan data pribadi.');
+  } catch (err) {
+    $('lnErr').textContent = err.message;
+  } finally {
+    btn.textContent = btn.dataset.txt;
+    btn.disabled = false;
+  }
+});
+
+/* Banner pengingat (perangkat yang sama) */
+(function () {
+  const p = ambilPending();
+  if (p && p.nkk) {
+    $('bannerTeks').textContent = 'Pendaftaran KK ' + p.nkk + (p.namaKK ? ' (' + p.namaKK + ')' : '')
+      + ' belum selesai. Lanjutkan mengisi data pribadi?';
+    $('bannerLanjut').classList.remove('hidden');
+  }
+})();
+$('bannerYa').addEventListener('click', async () => {
+  const p = ambilPending();
+  if (!p) return;
+  const btn = $('bannerYa');
+  setBusy(btn, true, 'Memeriksa...');
+  try {
+    const r = await callApi({ action: 'cekKK', data: { nkk: p.nkk, hp: p.hp } });
+    terapkanKK(r, p.hp);
+  } catch (err) {
+    toast(err.message, false);
+  } finally {
+    btn.textContent = btn.dataset.txt;
+    btn.disabled = false;
+  }
+});
+$('bannerTidak').addEventListener('click', () => {
+  hapusPending();
+  $('bannerLanjut').classList.add('hidden');
 });
 
 refreshKK();
